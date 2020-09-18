@@ -79,7 +79,7 @@ function init() {
 	var col3 = new THREE.Color('pink');
 
 	
-	geometry=getGeometry(4); //torus
+	geometry=getGeometry(3); //4=torus
 	material=getMaterial(4); //seagull wrap	5=trump
 	//always create objects outside animation loop
 	myObject = new THREE.Mesh( geometry, material );  
@@ -98,33 +98,8 @@ function init() {
 	heightSegments — Optional. Default is 1.
 
 	*/
-	var groundGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);  //this avoids need to set 3D vertices directly
-
-	const planeSize = 40; //this is actually number of images that should fill the plane...origin to edge?
-    const gloader = new THREE.TextureLoader();
-    var image_floor1='../TrumpDemo.png'
-    var image_floor2='../Seagull.png'
-    groundTexture=gloader.load(image_floor1); //insert an image as the 'texture'
-    groundTexture.wrapS = THREE.RepeatWrapping;
-    groundTexture.wrapT = THREE.RepeatWrapping;
-    groundTexture.magFilter = THREE.NearestFilter; //
-    var grepeats = planeSize / 2;  //effectively (20,20)
-    groundTexture.repeat.set(grepeats, grepeats);
-    /*
-    // If texture is used for color information, set colorspace.
-	groundTexture.encoding = THREE.sRGBEncoding;
-	// UVs use the convention that (0, 0) corresponds to the upper left corner of a texture.
-	groundTexture.flipY = false;
-	*/
-
-	var groundMaterial = new THREE.MeshBasicMaterial( { map: groundTexture, side: THREE.DoubleSide } ); //up and down
-	
-    var ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    //origin is 0,0
-	ground.position.y = 0;  //y=-50.5
-	ground.rotation.x = Math.PI/2;//0 is default xy plane but this rotation takes it to yz plane so changing z position navigates horizontally to origin
-	
-	scene.add(ground);
+	addFloor();
+	addBackWall();
 
 	gltfloader = new GLTFLoader();
 	//relative location 
@@ -135,9 +110,12 @@ function init() {
 	var loadfile5='';
 	var gingerfile='../three-js.master/examples/models/gltf/ginger/gingerman3.gltf';
 	var scale2=0.2; //gingerbread man needs small scale
+	/*
+	OPTIONAL OBJECTS
 	var myObject6=loadObject(gingerfile,scale2,0,0,0); //ground level.  Loads and adds to scene as node.
 	var myObject5=loadObject(truckfile,scale1,0,100,0);
 	var myObject2=loadObject(helmetfile,scale3,0,50,0);
+	*/
 
 	//try an update to the helmet texture and update:
 	/*
@@ -150,7 +128,6 @@ function init() {
 	//TO DO : reference to positions outside  
 
 	// ---- CAMERA ---
-	//if you make the z val bigger, then camera is further away (your 'z' position is further from origin.  1 is very close.  50 is far.
 	//Some good tips on this here: https://discoverthreejs.com/tips-and-tricks/
 
 	//camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -160,17 +137,19 @@ function init() {
 	fov — Camera frustum vertical field of view.
 	aspect — Camera frustum aspect ratio.
 	near — Camera frustum near plane.
-	far — Camera frustum far plane.  Once camera position is > far, it loses 'scene'
+	far — Camera frustum far plane.  Once camera position is > far, it loses 'scene'.  Objects > far not displayed.
 
 */
 	//---setup your camera according to your conventions for the scene...//
-	var far= 500
-	camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, far);  //(fov, aspect, near, far);
 	var camx=0; //(0,100,100)
-	var camy=100;  // if your plane (floor) is xz plane then y values are height.  You are looking with camera so that z is depth though.
-	var camz=250; //if you have a large plane e.g. 1000 x 1000 then this is necessary to 'see' the image at ground etc.
-    camera.position.set(camx, camy, camz);
-	camera.lookAt(0,0,0); //how to store a cubic
+	var camy=200;  // if your plane (floor) is xz plane then y values are height.  You are looking with camera so that z is depth though.
+	var camz=600; //back from origin, on same side as light.
+    var farcam=800; //how far we 'see' from camera
+	var nearcam = 0.1; //how far from camera we start to 'see'
+	camera = new THREE.PerspectiveCamera(45, 4 / 3, nearcam, farcam);  //(fov=45 deg, aspect, near, far); 
+	// relative to the frustum 'near'
+	camera.position.set(camx, camy, camz);
+	camera.lookAt(0,200,0); //keep this at same level as the camera i.e. horizontal
 
     console.log(camera)
     controls = new OrbitControls(camera,myCanvas); //no need for THREE prefix here.
@@ -195,7 +174,56 @@ function init() {
 	scene.add(light);
 }
 
+function addFloor() {
+	var groundGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);  //this avoids need to set 3D vertices directly
+
+	const planeSize = 40; //this is actually number of images that should fill the plane...origin to edge?
+    const gloader = new THREE.TextureLoader();
+    var image_floor1='../pexels-photo-2579912.jpg'
+    var image_floor2='../Seagull.png'
+    groundTexture=gloader.load(image_floor1); //insert an image as the 'texture'
+    groundTexture.magFilter = THREE.NearestFilter; //
+    /* To tile, use this:
+    groundTexture.wrapS = THREE.RepeatWrapping;
+    groundTexture.wrapT = THREE.RepeatWrapping;
+    var grepeats = planeSize / 2;  //effectively (20,20)
+    groundTexture.repeat.set(grepeats, grepeats);
+    */
+    /*
+    // If texture is used for color information, set colorspace.
+	groundTexture.encoding = THREE.sRGBEncoding;
+	// UVs use the convention that (0, 0) corresponds to the upper left corner of a texture.
+	groundTexture.flipY = false;
+	*/
+
+	var groundMaterial = new THREE.MeshBasicMaterial( { map: groundTexture, side: THREE.DoubleSide } ); //up and down
 	
+    var ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    //origin is 0,0
+	ground.position.y = 0;  //y=-50.5
+	ground.rotation.x = Math.PI/2;//0 is default xy plane but this rotation takes it to yz plane so changing z position navigates horizontally to origin
+	
+	scene.add(ground);
+}
+
+function addBackWall() {
+	//class pythreejs.PlaneGeometry(width=1, height=1, widthSegments=1, heightSegments=1)
+	var wallGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);  //this avoids need to set 3D vertices directly
+
+	const wall_loader = new THREE.TextureLoader();
+    var wall='../pexels-photo-2579912.jpg'; //space
+    var wallTexture=wall_loader.load(wall); //insert an image as the 'texture'
+    wallTexture.magFilter = THREE.NearestFilter; //
+	var wallMaterial = new THREE.MeshBasicMaterial( { map: groundTexture, side: THREE.DoubleSide } ); //up and down
+	
+    var wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    //origin is 0,0
+	wall.position.y = 0;  //y=-50.5
+	wall.position.z = -100; //push away from user pov. -100 places it behind the sphere if sphere is at z=0
+	wall.rotation.x = 0; //default is xy so ok.  Math.PI/2;//0 is default xy plane but this rotation takes it to yz plane so changing z position navigates horizontally to origin
+	
+	scene.add(wall);
+}
 
 function getMaterial(materialtype) {
 	var material;
@@ -214,14 +242,15 @@ function getMaterial(materialtype) {
 		// Create a texture loader so we can load the image file
 		var imgloader = new THREE.TextureLoader();
 		material = new THREE.MeshLambertMaterial({
- 		 	map: imgloader.load('../Seagull.png')
+ 		 	//map: imgloader.load('../Seagull.png')
+ 		 	map: imgloader.load('../Seagull.png') //or planet
 		});
 	}
 	else if (materialtype==5) {
 		// Create a texture loader so we can load the image file
 		var imgloader = new THREE.TextureLoader();
 		material = new THREE.MeshLambertMaterial({
- 		 	map: imgloader.load('../TrumpDemo.png')
+ 		 	map: imgloader.load('../Seagull.png')
 		});
 	}
 	return material;
@@ -264,7 +293,7 @@ function getGeometry(choice) {
 		*/
 		//args are: radius, segs(w), segs(h).  Use ratio of about 1:20 for these?
 		//Try and choose segs that are multiples of 4.
-		geometry = new THREE.SphereGeometry(3,68,32); 
+		geometry = new THREE.SphereGeometry(30,68,32); 
 	}
 
 		/*
