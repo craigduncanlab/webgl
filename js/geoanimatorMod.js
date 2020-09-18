@@ -65,7 +65,7 @@ function init() {
 	*/
 
 	//general variables
-	var Pi = 3.141592653;
+	var Pi = 3.141592653; //just use Math.Pi
 
 	
 	
@@ -117,29 +117,17 @@ function init() {
 	var myObject2=loadObject(helmetfile,scale3,0,50,0);
 	*/
 
-	//try an update to the helmet texture and update:
+
 	/*
-	gullmaterial=getMaterial(4); //if you can't access the texture directly...replace the whole mesh...
-	myObject2 = new THREE.Mesh()
-	myObject2.material.needsUpdate = true
-	myObject2.material.map.needsUpdate = true; //'map' refers to the texture in the material object.  See arguments to THREE.Mesh..()
-	*/
-
-	//TO DO : reference to positions outside  
-
-	// ---- CAMERA ---
-	//Some good tips on this here: https://discoverthreejs.com/tips-and-tricks/
-
-	//camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-	
-	/*
+	These define the Camera's 'frustum window', used for rendering but independent of objects in 3D scene.
+	Objects < near or > far not displayed.  Frustum near plane is smaller than frustum far plane.
 
 	fov — Camera frustum vertical field of view.
 	aspect — Camera frustum aspect ratio.
 	near — Camera frustum near plane.
-	far — Camera frustum far plane.  Once camera position is > far, it loses 'scene'.  Objects > far not displayed.
+	far — Camera frustum far plane.  
 
-*/
+	*/
 	//---setup your camera according to your conventions for the scene...//
 	var camx=0; //(0,100,100)
 	var camy=200;  // if your plane (floor) is xz plane then y values are height.  You are looking with camera so that z is depth though.
